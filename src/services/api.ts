@@ -14,8 +14,8 @@ export interface Pokemon {
 }
 
 export interface AboutInfo {
-  height: string | null;
-  weight: string | null;
+  height: number | null;
+  weight: number | null;
   description: string | null;
 }
 

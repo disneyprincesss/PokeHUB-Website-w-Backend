@@ -14,8 +14,8 @@ db.pragma('journal_mode = WAL');
 db.exec(`
   CREATE TABLE IF NOT EXISTS pokemon_info (
     pokemon_id INTEGER PRIMARY KEY,
-    height TEXT,
-    weight TEXT,
+    height REAL,
+    weight REAL,
     description TEXT,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP

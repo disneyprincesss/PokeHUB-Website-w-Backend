@@ -7,7 +7,7 @@ import { ScrollArea } from "./ui/scroll-area";
 import type { PokemonDetails } from "@/types/pokemon";
 import { apiService, type AboutInfo } from "../services/api";
 import { useEffect, useState } from "react";
-import { useLocation } from "react-router-dom";
+// import { useLocation } from "react-router-dom";
 
 interface PokemonInfoProps {
   pokemon: PokemonDetails | null;
@@ -25,8 +25,8 @@ export default function PokemonInfo({
   const [aboutInfo, setAboutInfo] = useState<AboutInfo | null>(null);
   const [editingAbout, setEditingAbout] = useState(false);
   const [aboutInput, setAboutInput] = useState<AboutInfo>({
-    height: "",
-    weight: "",
+    height: null,
+    weight: null,
     description: "",
   });
   const [aboutLoading, setAboutLoading] = useState(false);
@@ -58,8 +58,8 @@ export default function PokemonInfo({
 
   const handleEditAbout = () => {
     setAboutInput({
-      height: aboutInfo?.height || "",
-      weight: aboutInfo?.weight || "",
+      height: aboutInfo?.height || null,
+      weight: aboutInfo?.weight || null,
       description: aboutInfo?.description || "",
     });
     setEditingAbout(true);
@@ -68,7 +68,7 @@ export default function PokemonInfo({
 
   const handleCancelAboutEdit = () => {
     setEditingAbout(false);
-    setAboutInput({ height: "", weight: "", description: "" });
+    setAboutInput({ height: null, weight: null, description: "" });
     setAboutError(null);
   };
 
@@ -77,30 +77,37 @@ export default function PokemonInfo({
     setAboutError(null);
 
     try {
-      // Ensure we have a pokemon id to operate on
       if (!id) {
         setAboutError("No Pokémon selected.");
         return;
       }
 
-      // Trim inputs safely (fields may be null)
-      const trimmedInput = {
-        height: (aboutInput.height ?? "").trim(),
-        weight: (aboutInput.weight ?? "").trim(),
-        description: (aboutInput.description ?? "").trim(),
+      const submissionData = {
+        height: aboutInput.height,
+        weight: aboutInput.weight,
+        description: aboutInput.description
+          ? aboutInput.description.trim()
+          : null,
       };
 
-      // Check if all fields are empty (delete case)
+      // Debug logging
+      console.log("Submission data:", submissionData);
+      console.log("Data types:", {
+        height: typeof submissionData.height,
+        weight: typeof submissionData.weight,
+        description: typeof submissionData.description,
+      });
+
       const isEmpty =
-        !trimmedInput.height &&
-        !trimmedInput.weight &&
-        !trimmedInput.description;
+        submissionData.height === null &&
+        submissionData.weight === null &&
+        !submissionData.description;
 
       if (isEmpty) {
         await apiService.deleteAboutInfo(id);
         setAboutInfo(null);
       } else {
-        const response = await apiService.setAboutInfo(id, trimmedInput);
+        const response = await apiService.setAboutInfo(id, submissionData);
         setAboutInfo(response.data.aboutInfo);
       }
 
@@ -110,6 +117,32 @@ export default function PokemonInfo({
       setAboutError("Failed to save about information. Please try again.");
     } finally {
       setAboutLoading(false);
+    }
+  };
+
+  const handleHeightChange = (value: string) => {
+    if (value === "") {
+      setAboutInput((prev) => ({ ...prev, height: null }));
+    } else {
+      const numValue = parseFloat(value);
+      if (!isNaN(numValue) && numValue >= 0) {
+        // Round to 2 decimal places and convert back to number
+        const roundedValue = Math.round(numValue * 100) / 100;
+        setAboutInput((prev) => ({ ...prev, height: roundedValue }));
+      }
+    }
+  };
+
+  const handleWeightChange = (value: string) => {
+    if (value === "") {
+      setAboutInput((prev) => ({ ...prev, weight: null }));
+    } else {
+      const numValue = parseFloat(value);
+      if (!isNaN(numValue) && numValue >= 0) {
+        // Round to 2 decimal places and convert back to number
+        const roundedValue = Math.round(numValue * 100) / 100;
+        setAboutInput((prev) => ({ ...prev, weight: roundedValue }));
+      }
     }
   };
 
@@ -271,8 +304,8 @@ export default function PokemonInfo({
                 <div className="flex">
                   <h3>Species:</h3>
                   <div className="ml-2 flex items-center">
-                    {pokemon?.types.map((t) => (
-                      <Tooltip>
+                    {pokemon?.types.map((t, index) => (
+                      <Tooltip key={index}>
                         <TooltipTrigger>
                           <img
                             key={t.slot}
@@ -289,7 +322,7 @@ export default function PokemonInfo({
                 <div className="flex items-center flex-wrap">
                   <h3>Abilities:</h3>
                   <div className="ml-2 flex flex-wrap items-center">
-                    {pokemon?.abilities.map((a) => {
+                    {pokemon?.abilities.map((a, index) => {
                       let abilityName = a.ability.name
                         .split(" ")
                         .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
@@ -372,7 +405,7 @@ export default function PokemonInfo({
                       }
 
                       return (
-                        <Tooltip>
+                        <Tooltip key={index}>
                           <TooltipTrigger>
                             <span
                               className={` text-xl sm:text-2xl px-2 py-1 mr-2 rounded-lg shadow-md text-white ${abilityColor}`}
@@ -396,19 +429,23 @@ export default function PokemonInfo({
                         <div className="flex items-center">
                           <h3>Height:</h3>
                           <span className="text-2xl ml-4">
-                            {aboutInfo?.height ||
-                              (pokemon?.height
-                                ? `${(pokemon.height / 10).toFixed(2)} m`
-                                : "Unknown")}
+                            {aboutInfo?.height !== null &&
+                            aboutInfo?.height !== undefined
+                              ? `${aboutInfo.height} m` // Fix: Add units to custom height
+                              : pokemon?.height
+                              ? `${(pokemon.height / 10).toFixed(2)} m`
+                              : "Unknown"}
                           </span>
                         </div>
                         <div className="flex items-center">
                           <h3>Weight:</h3>
                           <span className="text-2xl ml-4">
-                            {aboutInfo?.weight ||
-                              (pokemon?.weight
-                                ? `${(pokemon.weight / 10).toFixed(2)} kg`
-                                : "Unknown")}
+                            {aboutInfo?.weight !== null &&
+                            aboutInfo?.weight !== undefined
+                              ? `${aboutInfo.weight} kg` // Fix: Add units to custom weight
+                              : pokemon?.weight
+                              ? `${(pokemon.weight / 10).toFixed(2)} kg`
+                              : "Unknown"}
                           </span>
                         </div>
                       </div>
@@ -445,15 +482,18 @@ export default function PokemonInfo({
                           <div className="flex gap-2 items-center">
                             <h3>Height:</h3>
                             <input
-                              type="text"
+                              type="number"
+                              step="0.01"
+                              min="0"
+                              max="1000"
                               value={aboutInput.height ?? ""}
                               onChange={(e) =>
-                                handleAboutInputChange("height", e.target.value)
+                                handleHeightChange(e.target.value)
                               }
                               placeholder={
                                 pokemon?.height
-                                  ? `${(pokemon.height / 10).toFixed(2)} m`
-                                  : "Unknown"
+                                  ? `${(pokemon.height / 10).toFixed(2)}`
+                                  : "0.00"
                               }
                               className={`w-50 h-10 px-2 border rounded-md text-lg focus:outline-none focus:ring-2 ${
                                 selectedPokemonType == "dark" ||
@@ -462,35 +502,27 @@ export default function PokemonInfo({
                                   ? "bg-zinc-800 border-zinc-600 text-zinc-200 focus:ring-zinc-400"
                                   : "bg-white border-gray-300 text-gray-900 focus:ring-blue-500"
                               }`}
-                              maxLength={10}
                             />
+                            <span className="text-sm">meters</span>
                           </div>
-                          <p
-                            className={`text-xs ml-24 ${
-                              selectedPokemonType == "dark" ||
-                              selectedPokemonType == "ghost" ||
-                              selectedPokemonType == "steel"
-                                ? "text-zinc-400"
-                                : "text-gray-800"
-                            }`}
-                          >
-                            {(aboutInput.height ?? "").length}/10 characters
-                          </p>
                         </div>
 
                         <div className="flex flex-col w-fit">
                           <div className="flex gap-2 items-center">
                             <h3>Weight:</h3>
                             <input
-                              type="text"
+                              type="number"
+                              step="0.01"
+                              min="0"
+                              max="10000"
                               value={aboutInput.weight ?? ""}
                               onChange={(e) =>
-                                handleAboutInputChange("weight", e.target.value)
+                                handleWeightChange(e.target.value)
                               }
                               placeholder={
                                 pokemon?.weight
-                                  ? `${(pokemon.weight / 10).toFixed(2)} kg`
-                                  : "Unknown"
+                                  ? `${(pokemon.weight / 10).toFixed(2)}`
+                                  : "0.00"
                               }
                               className={`w-50 h-10 px-2 border rounded-md text-lg focus:outline-none focus:ring-2 ${
                                 selectedPokemonType == "dark" ||
@@ -499,20 +531,9 @@ export default function PokemonInfo({
                                   ? "bg-zinc-800 border-zinc-600 text-zinc-200 focus:ring-zinc-400"
                                   : "bg-white border-gray-300 text-gray-900 focus:ring-blue-500"
                               }`}
-                              maxLength={10}
                             />
+                            <span className="text-sm">kg</span>
                           </div>
-                          <p
-                            className={`text-xs ml-24 ${
-                              selectedPokemonType == "dark" ||
-                              selectedPokemonType == "ghost" ||
-                              selectedPokemonType == "steel"
-                                ? "text-zinc-400"
-                                : "text-gray-800"
-                            }`}
-                          >
-                            {(aboutInput.weight ?? "").length}/10 characters
-                          </p>
                         </div>
                       </div>
 
@@ -628,6 +649,7 @@ export default function PokemonInfo({
                       <div key={evolution.id} className="flex items-center">
                         <div className="bg-white/20 rounded-lg p-2 flex flex-col items-center w-30 sm:min-w-35 sm:h-52">
                           <img
+                            key={index}
                             src={evolution.image}
                             alt={evolution.name}
                             className="w-24 h-24 sm:w-28 sm:h-28 object-contain"

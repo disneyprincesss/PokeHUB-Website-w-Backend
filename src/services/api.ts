@@ -10,6 +10,7 @@ export interface Pokemon {
   defense: number;
   speed: number;
   image: string;
+  nickname?: string | null;
   customAbout?: AboutInfo | null;
 }
 
@@ -110,6 +111,32 @@ class ApiService {
       method: "POST",
       body: JSON.stringify(pokemon),
     });
+  }
+
+  // Nickname methods
+  async getNickname(
+    id: number
+  ): Promise<{ data: { pokemonId: number; nickname: string | null } }> {
+    return this.request<{
+      data: { pokemonId: number; nickname: string | null };
+    }>(`/pokemon/${id}/nickname`);
+  }
+
+  async setNickname(
+    id: number,
+    nickname: string
+  ): Promise<{ data: { pokemonId: number; nickname: string } }> {
+    return this.request<{ data: { pokemonId: number; nickname: string } }>(
+      `/pokemon/${id}/nickname`,
+      {
+        method: "PUT",
+        body: JSON.stringify({ nickname }),
+      }
+    );
+  }
+
+  async deleteNickname(id: number): Promise<void> {
+    return this.request<void>(`/pokemon/${id}/nickname`, { method: "DELETE" });
   }
 
   // Health check

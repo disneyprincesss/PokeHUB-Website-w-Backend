@@ -1,4 +1,4 @@
-import { SquareX } from "lucide-react";
+import { Pencil, Plus, SquareX } from "lucide-react";
 import { Card } from "./ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
@@ -7,7 +7,7 @@ import { ScrollArea } from "./ui/scroll-area";
 import type { PokemonDetails } from "@/types/pokemon";
 import { apiService, type AboutInfo } from "../services/api";
 import { useEffect, useState } from "react";
-// import { useLocation } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 
 interface PokemonInfoProps {
   pokemon: PokemonDetails | null;
@@ -22,6 +22,16 @@ export default function PokemonInfo({
 }: PokemonInfoProps) {
   const selectedPokemonType = pokemon?.types[0].type.name || "";
   const id = pokemon?.id;
+  const location = useLocation();
+
+  //nickname
+  const [nickname, setNickname] = useState<string | null>(null);
+  const [editingNickname, setEditingNickname] = useState(false);
+  const [inputNickname, setInputNickname] = useState("");
+  const [loadingNickname, setLoadingNickname] = useState(false);
+  const [errorNickname, setErrorNickname] = useState<string | null>(null);
+
+  //about
   const [aboutInfo, setAboutInfo] = useState<AboutInfo | null>(null);
   const [editingAbout, setEditingAbout] = useState(false);
   const [aboutInput, setAboutInput] = useState<AboutInfo>({
@@ -37,24 +47,61 @@ export default function PokemonInfo({
     if (!id) return;
     let mounted = true;
 
-    const loadAboutInfo = async () => {
+    const loadData = async () => {
       try {
-        const response = await apiService.getAboutInfo(id);
+        // Load both nickname and about info simultaneously
+        const [aboutResponse, nicknameResponse] = await Promise.all([
+          apiService.getAboutInfo(id),
+          apiService.getNickname(id),
+        ]);
+
         if (mounted) {
-          setAboutInfo(response.data.aboutInfo);
+          setAboutInfo(aboutResponse.data.aboutInfo);
+          setNickname(nicknameResponse.data.nickname);
         }
       } catch (error) {
-        console.error("Failed to load about info:", error);
+        console.error("Failed to load data:", error);
         // Gracefully handle - don't show error to user
       }
     };
 
-    loadAboutInfo();
+    loadData();
 
     return () => {
       mounted = false;
     };
   }, [id]);
+
+  const handleEditNickname = () => {
+    setInputNickname(nickname || "");
+    setEditingNickname(true);
+    setErrorNickname(null);
+  };
+
+  const saveNickname = async () => {
+    if (!id) return;
+
+    try {
+      setLoadingNickname(true);
+      setErrorNickname(null);
+
+      const trimmed = inputNickname.trim();
+
+      if (trimmed.length === 0) {
+        await apiService.deleteNickname(id);
+        setNickname(null);
+      } else {
+        const res = await apiService.setNickname(id, trimmed);
+        setNickname(res.data.nickname);
+      }
+
+      setEditingNickname(false);
+    } catch (e: any) {
+      setErrorNickname(e?.message || "Failed to save nickname");
+    } finally {
+      setLoadingNickname(false);
+    }
+  };
 
   const handleEditAbout = () => {
     setAboutInput({
@@ -63,12 +110,6 @@ export default function PokemonInfo({
       description: aboutInfo?.description || "",
     });
     setEditingAbout(true);
-    setAboutError(null);
-  };
-
-  const handleCancelAboutEdit = () => {
-    setEditingAbout(false);
-    setAboutInput({ height: null, weight: null, description: "" });
     setAboutError(null);
   };
 
@@ -241,7 +282,7 @@ export default function PokemonInfo({
           alt={pokemon?.name}
           className={`z-10 mx-auto absolute right-0 h-40 sm:h-45 lg:h-100 ${
             selectedPokemonType == "normal"
-              ? "lg:top-0 lg:bottom-0 lg:my-auto left-0 lg:right-0 "
+              ? "lg:inset-0 lg:my-auto inset-x-0 h-45 sm:h-55"
               : "left-10 sm:left-25 top-12 lg:top-55 lg:left-40"
           } `}
         />
@@ -258,6 +299,75 @@ export default function PokemonInfo({
         <h1 className="text-5xl sm:text-7xl lg:text-8xl font-jersey font-bold uppercase tracking-wider text-shadow-[5px_5px_6px_rgba(0,0,0,0.5)] sm:text-shadow-[8px_8px_10px_rgba(0,0,0,0.5)] text-center lg:text-left z-10">
           {pokemon?.name}
         </h1>
+
+        {editingNickname ? (
+          <div className="flex items-center gap-4 w-full max-w-md">
+            <input
+              value={inputNickname}
+              onChange={(e) => setInputNickname(e.target.value)}
+              maxLength={40}
+              placeholder="Enter nickname (empty to clear)"
+              className={`w-3/4 font-robotoslab px-3 py-2 rounded-lg border-2 focus:outline-none focus:ring-2 ${
+                selectedPokemonType == "dark" ||
+                selectedPokemonType == "ghost" ||
+                selectedPokemonType == "steel"
+                  ? "bg-zinc-800 border-zinc-600 text-zinc-200 focus:ring-zinc-400"
+                  : "bg-white border-zinc-300 text-zinc-800 focus:ring-blue-500"
+              }`}
+              disabled={loadingNickname}
+            />
+            <div className="flex gap-2 font-robotoslab">
+              <button
+                onClick={saveNickname}
+                disabled={loadingNickname}
+                className="px-3 py-1.5 text-sm bg-green-500 text-white rounded hover:bg-green-600 disabled:opacity-50 transition-colors"
+              >
+                {loadingNickname ? "Saving..." : "Save"}
+              </button>
+              <button
+                onClick={() => setEditingNickname(false)}
+                disabled={loadingNickname}
+                className="px-3 py-1.5 text-sm bg-gray-500 text-white rounded hover:bg-gray-600 disabled:opacity-50 transition-colors"
+              >
+                Cancel
+              </button>
+            </div>
+            {errorNickname && (
+              <span className="text-sm text-red-500 font-medium">
+                {errorNickname}
+              </span>
+            )}
+          </div>
+        ) : (
+          <div className="flex flex-col items-center gap-1 font-robotoslab lg:flex-row lg:gap-3">
+            {nickname && (
+              <div
+                className={`text-xl font-medium${
+                  selectedPokemonType == "dark" ||
+                  selectedPokemonType == "ghost" ||
+                  selectedPokemonType == "steel"
+                    ? "text-zinc-200"
+                    : "text-zinc-800"
+                }`}
+              >
+                "{nickname}"
+              </div>
+            )}
+            {isEditMode && (
+              <button
+                onClick={handleEditNickname}
+                className={`cursor-pointer px-2 py-0.5 text-md rounded bg-[#0E9000] text-zinc-100 hover:bg-[#4cab39]`}
+              >
+                {nickname ? (
+                  <Pencil className="inline-block w-5 h-5 mr-2" />
+                ) : (
+                  <Plus className="inline-block w-5 h-5 mr-1" />
+                )}
+                {nickname ? "Edit Nickname" : "Add Nickname"}
+              </button>
+            )}
+          </div>
+        )}
 
         <Tabs defaultValue="about">
           <TabsList>
@@ -299,7 +409,15 @@ export default function PokemonInfo({
             </TabsTrigger>
           </TabsList>
           <TabsContent value="about">
-            <ScrollArea className="h-80 sm:h-90 lg:h-115 w-full">
+            <ScrollArea
+              className={`${
+                isEditMode
+                  ? "h-70 sm:h-80 lg:h-105"
+                  : nickname
+                  ? "h-69 sm:h-78 lg:h-100"
+                  : "h-80 sm:h-84 lg:h-110"
+              } w-full`}
+            >
               <div className="flex flex-col gap-2">
                 <div className="flex">
                   <h3>Species:</h3>
@@ -422,59 +540,7 @@ export default function PokemonInfo({
                   </div>
                 </div>
                 <div>
-                  {!editingAbout ? (
-                    <div className="space-y-1">
-                      {/* Display current about info */}
-                      <div className="flex flex-col gap-2">
-                        <div className="flex items-center">
-                          <h3>Height:</h3>
-                          <span className="text-2xl ml-4">
-                            {aboutInfo?.height !== null &&
-                            aboutInfo?.height !== undefined
-                              ? `${aboutInfo.height} m` // Fix: Add units to custom height
-                              : pokemon?.height
-                              ? `${(pokemon.height / 10).toFixed(2)} m`
-                              : "Unknown"}
-                          </span>
-                        </div>
-                        <div className="flex items-center">
-                          <h3>Weight:</h3>
-                          <span className="text-2xl ml-4">
-                            {aboutInfo?.weight !== null &&
-                            aboutInfo?.weight !== undefined
-                              ? `${aboutInfo.weight} kg` // Fix: Add units to custom weight
-                              : pokemon?.weight
-                              ? `${(pokemon.weight / 10).toFixed(2)} kg`
-                              : "Unknown"}
-                          </span>
-                        </div>
-                      </div>
-
-                      {(aboutInfo?.description || pokemon?.description) && (
-                        <div>
-                          <h3>Description: </h3>
-                          <p className="text-xl mt-1 pr-2">
-                            {aboutInfo?.description || pokemon?.description}
-                          </p>
-                        </div>
-                      )}
-
-                      {isEditMode && (
-                        <button
-                          onClick={handleEditAbout}
-                          className={` px-3 py-1.5 text-sm rounded hover:opacity-90 transition-all ${
-                            selectedPokemonType == "dark" ||
-                            selectedPokemonType == "ghost" ||
-                            selectedPokemonType == "steel"
-                              ? "bg-zinc-600 hover:bg-zinc-700 text-zinc-200"
-                              : "bg-blue-500 hover:bg-blue-600 text-white"
-                          }`}
-                        >
-                          Customize Info
-                        </button>
-                      )}
-                    </div>
-                  ) : (
+                  {editingAbout ? (
                     <div className="space-y-1">
                       {/* Edit form */}
                       <div className="flex flex-col gap-3">
@@ -584,7 +650,7 @@ export default function PokemonInfo({
                           {aboutLoading ? "Saving..." : "Save"}
                         </button>
                         <button
-                          onClick={handleCancelAboutEdit}
+                          onClick={() => setEditingAbout(false)}
                           disabled={aboutLoading}
                           className="px-3 py-1.5 text-sm bg-gray-500 text-white rounded hover:bg-gray-600 disabled:opacity-50 transition-colors"
                         >
@@ -604,6 +670,53 @@ export default function PokemonInfo({
                         Leave all fields empty to remove customized information
                       </p>
                     </div>
+                  ) : (
+                    <div className="space-y-1">
+                      {/* Display current about info */}
+                      <div className="flex flex-col gap-2">
+                        <div className="flex items-center">
+                          <h3>Height:</h3>
+                          <span className="text-2xl ml-4">
+                            {aboutInfo?.height !== null &&
+                            aboutInfo?.height !== undefined
+                              ? `${aboutInfo.height} m` // Fix: Add units to custom height
+                              : pokemon?.height
+                              ? `${(pokemon.height / 10).toFixed(2)} m`
+                              : "Unknown"}
+                          </span>
+                        </div>
+                        <div className="flex items-center">
+                          <h3>Weight:</h3>
+                          <span className="text-2xl ml-4">
+                            {aboutInfo?.weight !== null &&
+                            aboutInfo?.weight !== undefined
+                              ? `${aboutInfo.weight} kg` // Fix: Add units to custom weight
+                              : pokemon?.weight
+                              ? `${(pokemon.weight / 10).toFixed(2)} kg`
+                              : "Unknown"}
+                          </span>
+                        </div>
+                      </div>
+
+                      {(aboutInfo?.description || pokemon?.description) && (
+                        <div>
+                          <h3>Description: </h3>
+                          <p className="text-xl mt-1 pr-2">
+                            {aboutInfo?.description || pokemon?.description}
+                          </p>
+                        </div>
+                      )}
+
+                      {isEditMode && (
+                        <button
+                          onClick={handleEditAbout}
+                          className="flex items-center cursor-pointer px-2 py-0.5 text-md rounded bg-[#31971C] text-zinc-100 hover:bg-[#4cab39]"
+                        >
+                          <Pencil className="w-4 h-4 mr-2" />
+                          Customize Info
+                        </button>
+                      )}
+                    </div>
                   )}
                 </div>
               </div>
@@ -615,33 +728,51 @@ export default function PokemonInfo({
           >
             <div className="stats">
               <h3>Stats</h3>
-              <ul className="flex flex-col gap-4 w-100 h-62 sm:h-68 text-xl sm:text-2xl sm:w-125 mt-3">
-                {pokemon?.stats.map((s) => {
-                  let statName = s.stat.name
-                    .split("-")
-                    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
-                    .join("-");
+              <ScrollArea
+                className={`${
+                  isEditMode
+                    ? "h-58 sm:h-68 lg:h-98"
+                    : nickname
+                    ? "h-57 sm:h-66"
+                    : "h-68 sm:h-72 lg:h-98"
+                } w-full`}
+              >
+                <ul className="flex flex-col gap-4 w-100 h-62 sm:h-68 text-xl sm:text-2xl sm:w-125 mt-3">
+                  {pokemon?.stats.map((s) => {
+                    let statName = s.stat.name
+                      .split("-")
+                      .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+                      .join("-");
 
-                  return (
-                    <li
-                      key={s.stat.name}
-                      className="w-full flex items-center gap-4 "
-                    >
-                      <span className="w-2/3">{statName}</span>
-                      <div className="w-full flex items-center justify-between">
-                        <Progress value={s.base_stat} className="w-5/6" />
-                        <span>{s.base_stat}</span>
-                      </div>
-                    </li>
-                  );
-                })}
-              </ul>
+                    return (
+                      <li
+                        key={s.stat.name}
+                        className="w-full flex items-center gap-4 "
+                      >
+                        <span className="w-2/3">{statName}</span>
+                        <div className="w-full flex items-center justify-between">
+                          <Progress value={s.base_stat} className="w-5/6" />
+                          <span>{s.base_stat}</span>
+                        </div>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </ScrollArea>
             </div>
           </TabsContent>
           <TabsContent value="evolution" className="px-3 max-h-[45vh]">
             <div>
               <h3>Evolution Chain</h3>
-              <ScrollArea className="h-70 lg:h-98 w-full">
+              <ScrollArea
+                className={`${
+                  isEditMode
+                    ? "h-58 sm:h-68 lg:h-98"
+                    : nickname
+                    ? "h-57 sm:h-66"
+                    : "h-68 sm:h-72 lg:h-100"
+                } w-full`}
+              >
                 <div className="flex items-center gap-2 flex-wrap">
                   {pokemon?.evolutionChain &&
                   pokemon.evolutionChain.length > 1 ? (

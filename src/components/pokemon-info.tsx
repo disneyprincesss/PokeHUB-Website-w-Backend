@@ -231,7 +231,7 @@ export default function PokemonInfo({
           : selectedPokemonType == "normal"
           ? "from-[#A8A878] to-[#E0E0B0]"
           : ""
-      } w-[95vw] max-w-6xl max-h-[90vh] sm:max-h-screen lg:max-h-[90vh] absolute inset-0 my-auto mx-auto flex flex-col lg:flex-row overflow-hidden rounded-2xl`}
+      } w-[80vw] max-w-6xl max-h-[80vh] sm:max-h-screen lg:max-h-[80vh] absolute inset-0 my-auto mx-auto flex flex-col lg:flex-row overflow-hidden rounded-2xl`}
     >
       <div className="relative w-full">
         {selectedPokemonType != "normal" && (
@@ -288,15 +288,15 @@ export default function PokemonInfo({
         />
       </div>
       <div
-        className={`w-full pb-5 lg:pb-0 flex flex-col justify-center items-center lg:items-start lg:justify-start px-0 absolute bottom-0 lg:static ${
+        className={`w-full pb-5 lg:pb-0 flex flex-col justify-center items-center lg:items-start lg:justify-start px-4 sm:px-6 lg:px-8 absolute bottom-0 lg:static ${
           selectedPokemonType == "dark" ||
           selectedPokemonType == "ghost" ||
           selectedPokemonType == "steel"
             ? "text-zinc-200"
             : "text-zinc-800"
-        } `}
+        } pt-4 rounded-t-3xl lg:rounded-none`}
       >
-        <h1 className="text-5xl sm:text-7xl lg:text-8xl font-jersey font-bold uppercase tracking-wider text-shadow-[5px_5px_6px_rgba(0,0,0,0.5)] sm:text-shadow-[8px_8px_10px_rgba(0,0,0,0.5)] text-center lg:text-left z-10">
+        <h1 className="text-4xl sm:text-6xl lg:text-8xl font-jersey font-bold uppercase tracking-wider text-shadow-[3px_3px_4px_rgba(0,0,0,0.7)] sm:text-shadow-[5px_5px_6px_rgba(0,0,0,0.7)] text-center lg:text-left z-10 text-white lg:text-current">
           {pokemon?.name}
         </h1>
 
@@ -369,8 +369,8 @@ export default function PokemonInfo({
           </div>
         )}
 
-        <Tabs defaultValue="about">
-          <TabsList>
+        <Tabs defaultValue="about" className="w-full mt-4">
+          <TabsList className="flex items-center justify-between overflow-x-auto">
             <TabsTrigger
               value="about"
               className={`${
@@ -408,7 +408,7 @@ export default function PokemonInfo({
               Evolution
             </TabsTrigger>
           </TabsList>
-          <TabsContent value="about">
+          <TabsContent value="about" className="px-3 sm:px-4 max-h-[35vh] pr-3">
             <ScrollArea
               className={`${
                 isEditMode
@@ -416,11 +416,11 @@ export default function PokemonInfo({
                   : nickname
                   ? "h-69 sm:h-78 lg:h-100"
                   : "h-80 sm:h-84 lg:h-110"
-              } w-full`}
+              } w-full px-2`}
             >
-              <div className="flex flex-col gap-2">
-                <div className="flex">
-                  <h3>Species:</h3>
+              <div className="mt-1 flex items-center flex-wrap gap-2">
+                <div className="flex items-center">
+                  <h3 className="text-base sm:text-lg lg:text-xl">Species:</h3>
                   <div className="ml-2 flex items-center">
                     {pokemon?.types.map((t, index) => (
                       <Tooltip key={index}>
@@ -429,7 +429,7 @@ export default function PokemonInfo({
                             key={t.slot}
                             src={`/image/pokemon-type/${t.type.name}.png`}
                             alt={`${t.type.name} type`}
-                            className="h-9 sm:h-10 mr-1"
+                            className="h-7 sm:h-8 lg:h-9 mr-1"
                           />
                         </TooltipTrigger>
                         <TooltipContent>{t.type.name}</TooltipContent>
@@ -526,7 +526,7 @@ export default function PokemonInfo({
                         <Tooltip key={index}>
                           <TooltipTrigger>
                             <span
-                              className={` text-xl sm:text-2xl px-2 py-1 mr-2 rounded-lg shadow-md text-white ${abilityColor}`}
+                              className={`text-base sm:text-xl lg:text-2xl px-2 py-1 mr-2 mb-2 rounded-lg shadow-md text-white ${abilityColor} whitespace-nowrap`}
                             >
                               {abilityName}
                             </span>
@@ -543,154 +543,147 @@ export default function PokemonInfo({
                   {editingAbout ? (
                     <div className="space-y-1">
                       {/* Edit form */}
-                      <div className="flex flex-col gap-3">
-                        <div className="flex flex-col w-fit">
-                          <div className="flex gap-2 items-center">
-                            <h3>Height:</h3>
-                            <input
-                              type="number"
-                              step="0.01"
-                              min="0"
-                              max="1000"
-                              value={aboutInput.height ?? ""}
-                              onChange={(e) =>
-                                handleHeightChange(e.target.value)
-                              }
-                              placeholder={
-                                pokemon?.height
-                                  ? `${(pokemon.height / 10).toFixed(2)}`
-                                  : "0.00"
-                              }
-                              className={`w-50 h-10 px-2 border rounded-md text-lg focus:outline-none focus:ring-2 ${
-                                selectedPokemonType == "dark" ||
-                                selectedPokemonType == "ghost" ||
-                                selectedPokemonType == "steel"
-                                  ? "bg-zinc-800 border-zinc-600 text-zinc-200 focus:ring-zinc-400"
-                                  : "bg-white border-gray-300 text-gray-900 focus:ring-blue-500"
-                              }`}
-                            />
-                            <span className="text-sm">meters</span>
+                      <div className="flex flex-col gap-4 w-full max-w-md mx-auto">
+                        {/* Height */}
+                        <div className="flex flex-col w-full">
+                          <div className="flex flex-wrap items-center gap-2 justify-between">
+                            <h3 className="font-semibold">Height:</h3>
+                            <div className="flex items-center gap-2 flex-grow">
+                              <input
+                                type="number"
+                                step="0.01"
+                                min="0"
+                                max="1000"
+                                value={aboutInput.height ?? ""}
+                                onChange={(e) => handleHeightChange(e.target.value)}
+                                placeholder={
+                                  pokemon?.height
+                                    ? `${(pokemon.height / 10).toFixed(2)}`
+                                    : "0.00"
+                                }
+                                className={`flex-grow min-w-[100px] h-10 px-3 border rounded-md text-base focus:outline-none focus:ring-2 ${
+                                  ["dark", "ghost", "steel"].includes(selectedPokemonType)
+                                    ? "bg-zinc-800 border-zinc-600 text-zinc-200 focus:ring-zinc-400"
+                                    : "bg-white border-gray-300 text-gray-900 focus:ring-blue-500"
+                                }`}
+                              />
+                              <span className="text-sm whitespace-nowrap">meters</span>
+                            </div>
                           </div>
                         </div>
 
-                        <div className="flex flex-col w-fit">
-                          <div className="flex gap-2 items-center">
-                            <h3>Weight:</h3>
-                            <input
-                              type="number"
-                              step="0.01"
-                              min="0"
-                              max="10000"
-                              value={aboutInput.weight ?? ""}
-                              onChange={(e) =>
-                                handleWeightChange(e.target.value)
-                              }
-                              placeholder={
-                                pokemon?.weight
-                                  ? `${(pokemon.weight / 10).toFixed(2)}`
-                                  : "0.00"
-                              }
-                              className={`w-50 h-10 px-2 border rounded-md text-lg focus:outline-none focus:ring-2 ${
-                                selectedPokemonType == "dark" ||
-                                selectedPokemonType == "ghost" ||
-                                selectedPokemonType == "steel"
-                                  ? "bg-zinc-800 border-zinc-600 text-zinc-200 focus:ring-zinc-400"
-                                  : "bg-white border-gray-300 text-gray-900 focus:ring-blue-500"
-                              }`}
-                            />
-                            <span className="text-sm">kg</span>
+                        {/* Weight */}
+                        <div className="flex flex-col w-full">
+                          <div className="flex flex-wrap items-center gap-2 justify-between">
+                            <h3 className="font-semibold">Weight:</h3>
+                            <div className="flex items-center gap-2 flex-grow">
+                              <input
+                                type="number"
+                                step="0.01"
+                                min="0"
+                                max="10000"
+                                value={aboutInput.weight ?? ""}
+                                onChange={(e) => handleWeightChange(e.target.value)}
+                                placeholder={
+                                  pokemon?.weight
+                                    ? `${(pokemon.weight / 10).toFixed(2)}`
+                                    : "0.00"
+                                }
+                                className={`flex-grow min-w-[100px] h-10 px-3 border rounded-md text-base focus:outline-none focus:ring-2 ${
+                                  ["dark", "ghost", "steel"].includes(selectedPokemonType)
+                                    ? "bg-zinc-800 border-zinc-600 text-zinc-200 focus:ring-zinc-400"
+                                    : "bg-white border-gray-300 text-gray-900 focus:ring-blue-500"
+                                }`}
+                              />
+                              <span className="text-sm whitespace-nowrap">kg</span>
+                            </div>
                           </div>
                         </div>
-                      </div>
 
-                      <div>
-                        <h3>Description</h3>
-                        <textarea
-                          value={aboutInput.description ?? ""}
-                          onChange={(e) =>
-                            handleAboutInputChange(
-                              "description",
-                              e.target.value
-                            )
-                          }
-                          placeholder={pokemon?.description}
-                          className={`w-100 lg:w-lg p-2 ml-1 border rounded-md text-lg focus:outline-none focus:ring-2 resize-none ${
-                            selectedPokemonType == "dark" ||
-                            selectedPokemonType == "ghost" ||
-                            selectedPokemonType == "steel"
-                              ? "bg-zinc-800 border-zinc-600 text-zinc-200 focus:ring-zinc-400"
-                              : "bg-white border-gray-300 text-gray-900 focus:ring-blue-500"
-                          }`}
-                          rows={4}
-                          maxLength={500}
-                        />
+                        {/* Description */}
+                        <div className="flex flex-col w-full">
+                          <h3 className="font-semibold mb-1">Description</h3>
+                          <textarea
+                            value={aboutInput.description ?? ""}
+                            onChange={(e) =>
+                              handleAboutInputChange("description", e.target.value)
+                            }
+                            placeholder={pokemon?.description}
+                            rows={4}
+                            maxLength={500}
+                            className={`w-full p-3 border rounded-md text-base focus:outline-none focus:ring-2 resize-y ${
+                              ["dark", "ghost", "steel"].includes(selectedPokemonType)
+                                ? "bg-zinc-800 border-zinc-600 text-zinc-200 focus:ring-zinc-400"
+                                : "bg-white border-gray-300 text-gray-900 focus:ring-blue-500"
+                            }`}
+                          />
+                          <p
+                            className={`text-xs mt-1 ${
+                              ["dark", "ghost", "steel"].includes(selectedPokemonType)
+                                ? "text-zinc-400"
+                                : "text-gray-800"
+                            }`}
+                          >
+                            {(aboutInput.description ?? "").length}/500 characters
+                          </p>
+                        </div>
+
+                        {/* Error Message */}
+                        {aboutError && (
+                          <p className="text-red-600 text-sm">{aboutError}</p>
+                        )}
+
+                        {/* Buttons */}
+                        <div className="flex flex-wrap gap-2">
+                          <button
+                            onClick={handleSaveAbout}
+                            disabled={aboutLoading}
+                            className="px-3 py-1.5 text-sm bg-green-500 text-white rounded hover:bg-green-600 disabled:opacity-50 transition-colors"
+                          >
+                            {aboutLoading ? "Saving..." : "Save"}
+                          </button>
+                          <button
+                            onClick={() => setEditingAbout(false)}
+                            disabled={aboutLoading}
+                            className="px-3 py-1.5 text-sm bg-gray-500 text-white rounded hover:bg-gray-600 disabled:opacity-50 transition-colors"
+                          >
+                            Cancel
+                          </button>
+                        </div>
+
+                        {/* Note */}
                         <p
-                          className={`text-xs my-1 ml-1 ${
-                            selectedPokemonType == "dark" ||
-                            selectedPokemonType == "ghost" ||
-                            selectedPokemonType == "steel"
+                          className={`text-xs ${
+                            ["dark", "ghost", "steel"].includes(selectedPokemonType)
                               ? "text-zinc-400"
                               : "text-gray-800"
                           }`}
                         >
-                          {(aboutInput.description ?? "").length}/500 characters
+                          Leave all fields empty to remove customized information
                         </p>
                       </div>
-
-                      {aboutError && (
-                        <p className="text-red-600 text-sm">{aboutError}</p>
-                      )}
-
-                      <div className="flex gap-2">
-                        <button
-                          onClick={handleSaveAbout}
-                          disabled={aboutLoading}
-                          className="px-3 py-1.5 text-sm bg-green-500 text-white rounded hover:bg-green-600 disabled:opacity-50 transition-colors"
-                        >
-                          {aboutLoading ? "Saving..." : "Save"}
-                        </button>
-                        <button
-                          onClick={() => setEditingAbout(false)}
-                          disabled={aboutLoading}
-                          className="px-3 py-1.5 text-sm bg-gray-500 text-white rounded hover:bg-gray-600 disabled:opacity-50 transition-colors"
-                        >
-                          Cancel
-                        </button>
-                      </div>
-
-                      <p
-                        className={`text-xs ${
-                          selectedPokemonType == "dark" ||
-                          selectedPokemonType == "ghost" ||
-                          selectedPokemonType == "steel"
-                            ? "text-zinc-400"
-                            : "text-gray-800"
-                        }`}
-                      >
-                        Leave all fields empty to remove customized information
-                      </p>
                     </div>
                   ) : (
                     <div className="space-y-1">
                       {/* Display current about info */}
-                      <div className="flex flex-col gap-2">
+                      <div className="flex flex-col gap-3 px-4">
                         <div className="flex items-center">
-                          <h3>Height:</h3>
-                          <span className="text-2xl ml-4">
+                          <h3 className="text-base sm:text-lg lg:text-xl">Height:</h3>
+                          <span className="text-base sm:text-lg lg:text-xl ml-4">
                             {aboutInfo?.height !== null &&
                             aboutInfo?.height !== undefined
-                              ? `${aboutInfo.height} m` // Fix: Add units to custom height
+                              ? `${aboutInfo.height} m`
                               : pokemon?.height
                               ? `${(pokemon.height / 10).toFixed(2)} m`
                               : "Unknown"}
                           </span>
                         </div>
                         <div className="flex items-center">
-                          <h3>Weight:</h3>
-                          <span className="text-2xl ml-4">
+                          <h3 className="text-base sm:text-lg lg:text-xl">Weight:</h3>
+                          <span className="text-base sm:text-lg lg:text-xl ml-4">
                             {aboutInfo?.weight !== null &&
                             aboutInfo?.weight !== undefined
-                              ? `${aboutInfo.weight} kg` // Fix: Add units to custom weight
+                              ? `${aboutInfo.weight} kg`
                               : pokemon?.weight
                               ? `${(pokemon.weight / 10).toFixed(2)} kg`
                               : "Unknown"}
@@ -699,9 +692,9 @@ export default function PokemonInfo({
                       </div>
 
                       {(aboutInfo?.description || pokemon?.description) && (
-                        <div>
-                          <h3>Description: </h3>
-                          <p className="text-xl mt-1 pr-2">
+                        <div className="px-4">
+                          <h3 className="text-base sm:text-lg lg:text-xl mb-2">Description: </h3>
+                          <p className="text-sm sm:text-base lg:text-lg pr-2 leading-relaxed">
                             {aboutInfo?.description || pokemon?.description}
                           </p>
                         </div>
@@ -737,7 +730,7 @@ export default function PokemonInfo({
                     : "h-68 sm:h-72 lg:h-98"
                 } w-full`}
               >
-                <ul className="flex flex-col gap-4 w-100 h-62 sm:h-68 text-xl sm:text-2xl sm:w-125 mt-3">
+                <ul className="flex flex-col gap-3 sm:gap-4 w-full max-w-[90vw] sm:max-w-[400px] lg:max-w-[500px] h-auto text-base sm:text-xl lg:text-2xl mt-3">
                   {pokemon?.stats.map((s) => {
                     let statName = s.stat.name
                       .split("-")
@@ -747,12 +740,12 @@ export default function PokemonInfo({
                     return (
                       <li
                         key={s.stat.name}
-                        className="w-full flex items-center gap-4 "
+                        className="w-full flex items-center gap-2 sm:gap-4"
                       >
-                        <span className="w-2/3">{statName}</span>
-                        <div className="w-full flex items-center justify-between">
-                          <Progress value={s.base_stat} className="w-5/6" />
-                          <span>{s.base_stat}</span>
+                        <span className="w-1/3 sm:w-2/5">{statName}</span>
+                        <div className="w-2/3 sm:w-3/5 flex items-center justify-between gap-2">
+                          <Progress value={s.base_stat} className="w-full" />
+                          <span className="min-w-[2.5rem] text-right">{s.base_stat}</span>
                         </div>
                       </li>
                     );
@@ -761,9 +754,9 @@ export default function PokemonInfo({
               </ScrollArea>
             </div>
           </TabsContent>
-          <TabsContent value="evolution" className="px-3 max-h-[45vh]">
+          <TabsContent value="evolution" className="px-4 max-h-[45vh]">
             <div>
-              <h3>Evolution Chain</h3>
+              <h3 className="text-base sm:text-lg lg:text-xl mb-4">Evolution Chain</h3>
               <ScrollArea
                 className={`${
                   isEditMode
@@ -771,21 +764,21 @@ export default function PokemonInfo({
                     : nickname
                     ? "h-57 sm:h-66"
                     : "h-68 sm:h-72 lg:h-100"
-                } w-full`}
+                } w-full px-2`}
               >
-                <div className="flex items-center gap-2 flex-wrap">
+                <div className="flex items-center gap-2 flex-wrap justify-center">
                   {pokemon?.evolutionChain &&
                   pokemon.evolutionChain.length > 1 ? (
                     pokemon.evolutionChain.map((evolution, index) => (
                       <div key={evolution.id} className="flex items-center">
-                        <div className="bg-white/20 rounded-lg p-2 flex flex-col items-center w-30 sm:min-w-35 sm:h-52">
+                        <div className="bg-white/20 backdrop-blur-sm rounded-lg p-2 flex flex-col items-center w-24 sm:w-32 lg:w-40">
                           <img
                             key={index}
                             src={evolution.image}
                             alt={evolution.name}
-                            className="w-24 h-24 sm:w-28 sm:h-28 object-contain"
+                            className="w-20 h-20 sm:w-24 sm:h-24 lg:w-28 lg:h-28 object-contain"
                           />
-                          <span className="text-sm sm:text-lg capitalize font-semibold mt-2 ">
+                          <span className="text-sm sm:text-base lg:text-lg capitalize font-semibold mt-2 text-center text-white">
                             {evolution.name}
                           </span>
                           <div className="flex gap-1 mt-2">
@@ -794,18 +787,18 @@ export default function PokemonInfo({
                                 key={type.slot}
                                 src={`/image/pokemon-type/${type.type.name}.png`}
                                 alt={type.type.name}
-                                className="w-6 h-6 sm:w-7 sm:h-7"
+                                className="w-5 h-5 sm:w-6 sm:h-6 lg:w-7 lg:h-7"
                               />
                             ))}
                           </div>
                         </div>
                         {index < (pokemon.evolutionChain?.length || 0) - 1 && (
-                          <span className="mx-2 text-lg sm:text-xl">→</span>
+                          <span className="mx-2 text-lg sm:text-xl font-bold text-white/90">→</span>
                         )}
                       </div>
                     ))
                   ) : (
-                    <p className="text-base sm:text-lg">
+                    <p className="text-base sm:text-lg text-white/90">
                       This Pokémon does not evolve.
                     </p>
                   )}

@@ -231,7 +231,7 @@ export default function PokemonInfo({
           : selectedPokemonType == "normal"
           ? "from-[#A8A878] to-[#E0E0B0]"
           : ""
-      } w-[80vw] max-w-6xl max-h-[80vh] sm:max-h-screen lg:max-h-[80vh] absolute inset-0 my-auto mx-auto flex flex-col lg:flex-row overflow-hidden rounded-2xl`}
+      } w-[95vw] max-w-6xl max-h-[80vh] sm:max-h-screen lg:max-h-[80vh] absolute inset-0 my-auto mx-auto flex flex-col lg:flex-row overflow-hidden rounded-2xl`}
     >
       <div className="relative w-full">
         {selectedPokemonType != "normal" && (
@@ -277,15 +277,16 @@ export default function PokemonInfo({
             }`}
           />
         )}
-        <img
-          src={`${pokemon?.image ? pokemon.image : ""}`}
-          alt={pokemon?.name}
-          className={`z-10 mx-auto absolute right-0 h-40 sm:h-45 lg:h-100 ${
-            selectedPokemonType == "normal"
-              ? "lg:inset-0 lg:my-auto inset-x-0 h-45 sm:h-55"
+<img
+  src={`${pokemon?.image ?? ""}`}
+  alt={pokemon?.name}
+          className={`pokemon-sprite z-10 mx-auto absolute right-0 h-40 sm:h-45 lg:h-100 
+            ${selectedPokemonType == "normal"
+              ? "lg:inset-0 lg:my-auto inset-x-0 sm:h-55"
               : "left-10 sm:left-25 top-12 lg:top-55 lg:left-40"
-          } `}
-        />
+            } 
+            laptop:left-10 laptop:top-24 laptop:right-auto`}
+/>
       </div>
       <div
         className={`w-full pb-5 lg:pb-0 flex flex-col justify-center items-center lg:items-start lg:justify-start px-4 sm:px-6 lg:px-8 absolute bottom-0 lg:static ${

@@ -203,3 +203,21 @@ h3 {
     @apply bg-background text-foreground;
   }
 }
+
+@media (min-width: 768px) {
+  .pokemon-sprite {
+    left: 13rem !important;
+    right: auto !important;
+    top: 5rem !important;
+    height: 20rem !important;
+  }
+}
+
+@media (min-width: 1022px){
+  .pokemon-sprite {
+    left: 5rem !important;
+    right: auto !important;
+    top: 5rem !important;
+    height: 30rem !important;
+  }
+}
